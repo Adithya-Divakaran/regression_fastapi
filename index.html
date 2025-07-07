@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Average Order Value Predictor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f6f8fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 50px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .container {
+      background-color: white;
+      padding: 25px 35px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Predict Order Value</h1>
+
+  <div class="container">
+    <label for="age">Age:</label>
+    <input type="number" id="age" required>
+
+    <label for="gender">Gender:</label>
+    <select id="gender" required>
+      <option value="">Select gender</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+    </select>
+
+    <button onclick="predict()">Predict</button>
+
+    <div class="result" id="result"></div>
+    <div class="error" id="error"></div>
+  </div>
+
+  <script>
+    async function predict() {
+  const age = document.getElementById('age').value;
+  const gender = document.getElementById('gender').value;
+  const resultDiv = document.getElementById('result');
+  const errorDiv = document.getElementById('error');
+
+  resultDiv.innerText = '';
+  errorDiv.innerText = '';
+
+  if (!age || !gender) {
+    errorDiv.innerText = "Please fill all fields.";
+    return;
+  }
+
+  try {
+    const response = await fetch('http://127.0.0.1:8000/predict', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        age: parseFloat(age),
+        gender: gender
+      })
+    });
+
+    const data = await response.json();
+    if (response.ok && data.predicted_avg_order_value !== undefined) {
+      resultDiv.innerText = "Predicted Average Order Value: ₹" + data.predicted_avg_order_value.toFixed(2);
+    } else {
+      errorDiv.innerText = data.error || "Something went wrong.";
+    }
+  } catch (error) {
+    errorDiv.innerText = "Error: " + error.message;
+  }
+}
+
+  </script>
+
+</body>
+</html>
